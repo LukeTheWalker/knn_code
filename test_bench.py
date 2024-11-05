@@ -24,8 +24,9 @@ tests = {
     },
     'mpi_core': {
         'active': True,
-        'processors': [2, 3, 4, 5, 6, 7, 8],
+        'processors': [2, 4, 8, 16, 32, 64, 128],
         'command': 'mpirun -np {processors} python mpi/test_knn.py {rows} {cols} {k}'
+        # 'command': 'srun -n {processors} python mpi/test_knn.py {rows} {cols} {k}'
     },
     'mpi_node': {
         'active': False,
@@ -141,7 +142,6 @@ class TestSuite:
                 for _ in range(number_of_run):
                     start_time = time.time()
                     command = test['command'].format(rows=rows, cols=self.cols, k=self.k, processors=n)
-                    print(f"Running {command}")
                     os.system(command)
                     time_run.append(time.time() - start_time)
                 times[f'{test_name}_{n}'] = Timing(time_run)
