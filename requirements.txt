@@ -2,3 +2,5 @@ matplotlib
 numpy
 pandas
 mpi4py
+numba
+cupy-cuda12x
