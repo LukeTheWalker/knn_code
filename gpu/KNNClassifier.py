@@ -38,5 +38,5 @@ predictions = knn.predict(X_train[X_test])
 #print(f'Prediction {predictions}')
 #print(f'Label      {y_train[X_test]}')
 # Calculate the number of equal elements
-print(f'correct {np.sum(y_train[X_test] == predictions)}')
+# print(f'correct {np.sum(y_train[X_test] == predictions)}')
 

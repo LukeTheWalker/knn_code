@@ -61,13 +61,21 @@ class KNNClassifier:
         for i in range(self.n_gpus):
             cuda.select_device(i)
             euclidean_distance_kernel[blocks_per_grid, threads_per_block, self.streams[i]](x_devices[i], self.d_X_train[i], d_distances[i])
-        
-        distances = [d.copy_to_host(stream=self.streams[i]) for i, d in enumerate(d_distances)]
-        distances = np.concatenate(distances)
 
-        k_nearest = cp.argsort(distances)[:self.k]
+        top_k_relative = []
+        for i in range(self.n_gpus):
+            cuda.select_device(i)
+            top_k_relative.append(cp.argsort(cp.asarray(d_distances[i]))[:self.k].get())
+
+        top_k = []
+        for j, candidate in enumerate(top_k_relative):
+            for i in list(candidate):
+                top_k.append(i + self.n_points_per_gpu * j)
+
+        distances = [(self.euclidean_distance(x, self.X_train[i]), i) for i in top_k]
+
+        k_nearest = [i for d, i in sorted(distances)[:self.k]]
 
         k_nearest_labels = self.y_train[k_nearest]
 
         return np.bincount(k_nearest_labels).argmax()
-         
