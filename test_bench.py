@@ -25,7 +25,7 @@ tests = {
     'mpi_core': {
         'active': True,
         'processors': [2, 4, 8, 16, 32, 64, 128],
-        'command': 'mpirun -np {processors} python mpi/test_knn.py {rows} {cols} {k}'
+        'command': 'mpirun -np {processors} --bind-to core --map-by slot python mpi/test_knn.py {rows} {cols} {k}'
         # 'command': 'srun -n {processors} python mpi/test_knn.py {rows} {cols} {k}'
     },
     'mpi_node': {
@@ -101,7 +101,7 @@ class TestSuite:
             return timing
 
     def standard_analysis(self):
-        rows = 10000
+        rows = 100000
         times = {}
         print("------------------------------------------------")
         print('Starting standard Analysis')
@@ -124,7 +124,7 @@ class TestSuite:
         print('Finished standard Analysis')
 
     def strong_scaling(self):
-        rows = 10000
+        rows = 100000
 
         print("------------------------------------------------")
         print('Starting strong scaling')
@@ -144,6 +144,7 @@ class TestSuite:
                     command = test['command'].format(rows=rows, cols=self.cols, k=self.k, processors=n)
                     os.system(command)
                     time_run.append(time.time() - start_time)
+                    print(f"Command run: {command} took {time_run[-1]}")
                 times[f'{test_name}_{n}'] = Timing(time_run)
                 results.append({
                     'test_name': test_name,
@@ -166,12 +167,12 @@ class TestSuite:
             for n in test['processors']:
                 processors.append(n)
                 speedups.append(times['baseline'].mean / times[f'{test_name}_{n}'].mean)
-                ax.errorbar(n, times[f'{test_name}_{n}'].mean, yerr=times[f'{test_name}_{n}'].std, fmt='o', label=f'{test_name} {n} processors')
+                ax.errorbar(n, times[f'{test_name}_{n}'].mean, yerr=times[f'{test_name}_{n}'].std, fmt='o')
 
+        ax.set_xticks(test['processors'])
         ax.set_xlabel('Number of Processors')
         ax.set_ylabel('Execution Time (s)')
         ax.set_title('Strong Scaling Performance')
-        ax.legend()
         plt.savefig(f'{graph_folder}/strong_scaling_performance.png')
 
         # Plot speedup
@@ -204,6 +205,7 @@ class TestSuite:
                     command = test['command'].format(rows=rows*n, cols=self.cols, k=self.k, processors=n)
                     os.system(command)
                     time_run.append(time.time() - start_time)
+                    print(f"Command run: {command} took {time_run[-1]}")
                 times[f'{test_name}_{n}'] = Timing(time_run)
                 results.append({
                     'test_name': test_name,
@@ -226,12 +228,12 @@ class TestSuite:
             for n in test['processors']:
                 processors.append(n)
                 speedups.append(times[f'baseline_{n}'].mean / times[f'{test_name}_{n}'].mean)
-                ax.errorbar(n, times[f'{test_name}_{n}'].mean, yerr=times[f'{test_name}_{n}'].std, fmt='o', label=f'{test_name} {n} processors')
+                ax.errorbar(n, times[f'{test_name}_{n}'].mean, yerr=times[f'{test_name}_{n}'].std, fmt='o')
 
+        ax.set_xticks(test['processors'])
         ax.set_xlabel('Number of Processors')
         ax.set_ylabel('Execution Time (s)')
         ax.set_title('Weak Scaling Performance')
-        ax.legend()
         plt.savefig(f'{graph_folder}/weak_scaling_performance.png')
 
         # Plot speedup
