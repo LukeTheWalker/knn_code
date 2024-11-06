@@ -32,5 +32,5 @@ predictions = knn.predict(X_train[X_test])
 # print(f'correct {np.sum(y_train[X_test] == predictions)}')
 
 end = time.time()
-print(f'{end-start}')
+print(f'{rows},{end-start}')
 
