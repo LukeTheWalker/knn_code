@@ -247,7 +247,7 @@ class TestSuite:
         print('Finished weak scaling')
 
 if __name__ == '__main__':
-    test_suite = TestSuite('baseline_times.csv')
+    test_suite = TestSuite('data_aion/baseline/baseline_times.csv')
     test_suite.standard_analysis()
     test_suite.strong_scaling()
     test_suite.weak_scaling()

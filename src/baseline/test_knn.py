@@ -1,6 +1,9 @@
 from KNNClassifier import KNNClassifier
 import numpy as np
+import time
 import sys
+
+start = time.time()
 
 if len(sys.argv) < 4:
     print('Usage: python test_knn.py <rows> <cols> <k>')
@@ -27,4 +30,7 @@ predictions = knn.predict(X_train[X_test])
 #print(f'Label      {y_train[X_test]}')
 # Calculate the number of equal elements
 # print(f'correct {np.sum(y_train[X_test] == predictions)}')
+
+end = time.time()
+print(f'{end-start}')
 
