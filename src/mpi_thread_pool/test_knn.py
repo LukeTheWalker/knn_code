@@ -1,21 +1,18 @@
 from mpi4py import MPI
 from KNNClassifier import KNNClassifier
 import numpy as np
-import sys
+import os
 
+import time
+
+# Initialize MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-if len(sys.argv) < 4:
-    print('Usage: python test_knn.py <rows> <cols> <k>')
-    sys.exit(1)
-
-# Example with random data
-rows = int(sys.argv[1])
-cols = int(sys.argv[2])
-k = int(sys.argv[3])
-
+# Parameters
+rows = int(os.getenv("ROWS", "100000"))
+cols = 500
 test_size = 1000
 
 # Root process generates training and test data
@@ -49,10 +46,8 @@ else:
 
 local_X_test_indices = X_test_indices[start_idx:end_idx]
 
-#print(f'Rank {rank} - Start index: {start_idx} - End index: {end_idx}')
-
 # Each process initializes the classifier and fits the model
-knn = KNNClassifier(k=k)
+knn = KNNClassifier(k=2)
 knn.fit(X_train, y_train)
 
 # Generate predictions
@@ -71,3 +66,8 @@ comm.Gatherv(local_predictions, (all_predictions, sendcounts), root=0)
 # Root process calculates and prints the accuracy
 if rank == 0:
     correct = np.sum(all_predictions == y_train[X_test_indices])
+    print(f'Correct Predictions: {correct}')
+    print(f'Accuracy: {correct / test_size * 100:.2f}%')
+    end = time.time()
+    elapsed_time = end - start
+    print(f'elapsed time:{elapsed_time:.6f}')
