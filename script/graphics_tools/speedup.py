@@ -1,54 +1,60 @@
+import pandas as pd
 import matplotlib.pyplot as plt
-import re
+import sys
+from matplotlib.ticker import ScalarFormatter
 
-# Define a function to parse the log data
-def parse_log_data(file_path):
-    # Regular expressions to extract the number of MPI processes and time
-    patternTime = r"time (\d+\.\d+)"
-    patternMPI = r"MPI processes: (\d+)"
+def strong_scaling(data_baseline, data_test, graph_folder):
+    rows = 10000
 
-    mpi_processes = []
-    times = []
-    
-    # Open the file and read the data
-    with open(file_path, 'r') as file:
-        log_data = file.read()
-    
-    # Find all matches in the log data
-    for match in re.finditer(patternMPI, log_data):
-        mpi_processes.append(int(match.group(1)))  # MPI processes  # Time
+    print("------------------------------------------------")
+    print('Starting strong scaling')
 
-    for match in re.finditer(patternTime, log_data):
-        times.append(float(match.group(1)))       # Time
-    
-    return mpi_processes, times
+    # Load data, columns are rows,mean,std
+    baseline = pd.read_csv(data_baseline, header=0)
+    test = pd.read_csv(data_test, header=0)
 
-def speedup_calc(times):
-    for t in range(len(times)):
-        speedup.append(times[0]/times[t])
+    # remove data rows == 10000
+    baseline = baseline[baseline['rows'] != 10000]
+    test = test[test['rows'] != 10000]
+
+    # Compute speedup
+    speedup = baseline['mean'] / test['mean']
+
+    # Plot speedup in log-log scale
+    plt.figure(figsize=(15, 8))
+    plt.plot(test['rows'], speedup, marker='o', label='Speedup')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel('Number of rows (log scale)')
+    plt.ylabel('Speedup (log scale)')
+    plt.title('Strong scaling (log-log scale)')
+    plt.grid()
+    plt.legend()
+
+    # Set custom ticks
+    plt.xticks(test['rows'])
+    plt.yticks(speedup)
+
+    # Avoid scientific notation for xticks
+    ax = plt.gca()
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    ax.xaxis.get_major_formatter().set_scientific(False)
+    ax.xaxis.get_major_formatter().set_useOffset(False)
+
+    # Avoid scientific notation for yticks
+    ax.yaxis.set_major_formatter(ScalarFormatter())
+    ax.yaxis.get_major_formatter().set_scientific(False)
+    ax.yaxis.get_major_formatter().set_useOffset(False)
+
+    plt.savefig(graph_folder + 'speedup_loglog.png')
+    plt.close()
+
+    print('Strong scaling completed')
 
     return speedup
 
-# Set the path to your text file (replace with your actual file path)
-file_path = "test_knn.txt"  # Change this to the path of your log file
-
-# Parse the data from the file
-mpi_processes, times = parse_log_data(file_path)
-
-speedup = []
-
-speedup = speedup_calc(times)
-
-# Create the plot
-plt.figure(figsize=(8, 6))
-plt.plot(mpi_processes, speedup, marker='o', linestyle='-', color='b', label='Speedup')
-
-# Add labels and title
-plt.xlabel('Number of MPI Processes')
-plt.ylabel('Speedup')
-plt.title('Speedup vs Number of MPI Processes')
-plt.grid(True)
-plt.legend()
-
-# Show the plot
-plt.savefig("prova.png")
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print('Usage: python speedup.py <data_baseline> <data_test> <graph_folder>')
+        sys.exit(1)
+    strong_scaling(sys.argv[1], sys.argv[2], sys.argv[3])

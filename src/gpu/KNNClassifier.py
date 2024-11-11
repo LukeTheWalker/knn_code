@@ -2,7 +2,6 @@ import numpy as np
 from numba import cuda, guvectorize, jit, njit
 import math
 import cupy as cp
-from tqdm import tqdm
 
 # CUDA kernel to compute Euclidean distance
 @cuda.jit
@@ -37,7 +36,7 @@ class KNNClassifier:
     def predict(self, X):
         # y_pred = [self._predict(x) for x in X]
         y_pred = []
-        for x in tqdm(X):
+        for x in X:
             y_pred.append(self._predict(x))
         return np.array(y_pred)
 

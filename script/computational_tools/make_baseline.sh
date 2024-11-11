@@ -16,5 +16,5 @@ micromamba activate PML
 # Run your code
 for i in 128000 100000 64000 32000 16000 10000 8000 4000 2000
 do
-    python3 ../../../../src/baseline/test_knn.py $i 500 1000
+    python3 ../../../../src/baseline/test_knn.py $i 500 2
 done

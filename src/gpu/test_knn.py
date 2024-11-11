@@ -2,6 +2,9 @@ from KNNClassifier import KNNClassifier
 import numpy as np
 from numba.cuda import pinned_array_like 
 import sys
+import time
+
+start = time.time()
 
 # Example with random data
 if len(sys.argv) < 4:
@@ -23,7 +26,7 @@ y_train = pinned_array_like(y_train_pageable)
 X_train[:] = X_train_pageable
 y_train[:] = y_train_pageable
 
-print(f'X_train shape {X_train.shape} - y_train shape {y_train.shape}')
+# print(f'X_train shape {X_train.shape} - y_train shape {y_train.shape}')
 
 knn = KNNClassifier(k=k)
 knn.fit(X_train, y_train)
@@ -39,5 +42,7 @@ predictions = knn.predict(X_train[X_test])
 #print(f'Prediction {predictions}')
 #print(f'Label      {y_train[X_test]}')
 # Calculate the number of equal elements
-print(f'correct {np.sum(y_train[X_test] == predictions)}')
+# print(f'correct {np.sum(y_train[X_test] == predictions)}')
 
+end = time.time()
+print(f'{rows},{end-start}')
